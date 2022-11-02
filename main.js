@@ -77,6 +77,10 @@ function utilizationTest(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0
     else return false;
 }
 
+function ceiling(number=Number){
+    return Math.ceil(number);
+}
+
 /**
  * To copy a object or a array and return it.
  * @param {*} array 
