@@ -13,12 +13,12 @@ ID,P,C
 ID(Integer) : DeadLine(Integer) : Computaion_time(Integer)
 Task equal or less then 10
 ```
-- output formate
-
-  - T : Status : ID
-    - T : 0 - DeadLine
-  - Status : 
-      - E : Executing
-      - I : Idle
-      - X : dead line missed
-  - ID : 0 - 10
+# output format
+T : Status : ID
+  
+- T : 0 - DeadLine
+- Status : 
+    - E : Executing
+    - I : Idle
+    - X : dead line missed
+- ID : 0 - 10

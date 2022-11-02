@@ -11,9 +11,11 @@ function main() {
         file = fs.readFileSync(process.argv[2], 'utf8');
     }
     catch (err) {
+        // print out the error message
         console.error(err.message);
         return;
     }
+
     let newFile = Array.from(file.split('\n'));
     let tasks = new Array();
     let lcmArray = new Array();
@@ -22,24 +24,57 @@ function main() {
             "ID": 0,
             "Period": 0,
             "ComputationalTime": 0,
+            "LeaveTime": 0
         }
         if (value === '0') {
             return;
         }
         let arr = String(value).split(':');
         lcmArray.push(Number(arr[1]));
-        temp.ID = arr[0];
-        temp.Period = arr[1];
-        temp.ComputationalTime = arr[2];
+        temp.ID = Number(arr[0]);
+        temp.Period = Number(arr[1]);
+        temp.ComputationalTime = Number(arr[2]);
+        temp.LeaveTime = Number(arr[2]);
         tasks.push(temp);
     })
     let roundTimes = arrayLCM(lcmArray);
-    //console.log(roundTimes);
-    //console.log(tasks);
-    exactTest(tasks);
-    utilizationTest(tasks);
-}
+    let e = exactTest(tasks);
+    let u = utilizationTest(tasks);
+    schedule(tasks, roundTimes);
 
+}
+function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "LeaveTime": 0 }], roundTimes) {
+    let timetable = [];
+    // sort by the period from short to long
+    tasks.sort((a, b) => {
+        if (a.Period > b.Period) return 1;
+        else if (a.Period < b.Period) return -1;
+        return 0;
+    });
+    let TaskIndex = 0;
+    let TaskTotal = tasks.length - 1;
+    for (let round = 0; round < roundTimes; round++) {
+        if(round)
+        if (tasks[TaskIndex].LeaveTime == 0) {
+            if (TaskIndex == TaskTotal) {
+                TaskIndex = 0;
+                console.log("continue")
+                continue;
+            }
+            TaskIndex++;
+        }
+        tasks[TaskIndex].LeaveTime--;
+        tasks.forEach((v, i) => {
+            if (round % v.Period == 0 && v.LeaveTime == 0 && round != 0) {
+                v.LeaveTime = v.ComputationalTime
+                TaskIndex = i;
+                console.log('hi')
+            }
+        })
+        console.log("Round", round, "\t task:", tasks[TaskIndex])
+    }
+
+}
 function exactTest(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, }]) {
     let n = tasks.length;
     let sum = new Array();
@@ -67,13 +102,17 @@ function exactTest(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, }]) 
             }
             sum[taskSet][round] = temp;
             if (sum[taskSet][round] > tasks[taskSet].Period) {
-                return false,console.log("faild( exact test )");
+                return false
             }
-            //console.log("T", taskSet, "\t round : ", round, "\tSum : ", sum[taskSet][round])
         }
     }
-    return true,console.log("success( exact test )");
+    return true//,console.log("success( exact test )");
 }
+/**
+ *
+ * @param {Array} tasks 
+ * @returns 
+ */
 function utilizationTest(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, }]) {
     let n = Number(tasks.length);
     let sum = 0;
@@ -83,11 +122,19 @@ function utilizationTest(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0
         let pI = Number(tasks[i].Period);
         sum += parseFloat(cI / pI);
     }
-    console.log("U",U)
-    if (sum <= U) return true,console.log("success( utilization test )",sum);
-    else return false,console.log("fail( utilization test )",sum);
+    let rtn = {
+        "isPass": false,
+        "table": U,
+        "U": sum
+    }
+    if (sum <= U) rtn.isPass = true
+    return rtn;
 }
-
+/**
+ * To get the ceiling of the input number
+ * @param {Number} number 
+ * @returns 
+ */
 function ceiling(number = Number) {
     //console.log(number)
     return parseInt(Math.ceil(number));
