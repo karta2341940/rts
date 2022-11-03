@@ -41,11 +41,17 @@ function main() {
     let e = exactTest(tasks);
     let u = utilizationTest(tasks);
     let result = schedule(tasks, roundTimes);
+    let output="";
     console.log(`RMS:U=${u.U} ${u.isPass?"<=":">"} ${u.table}`)
+    output+=`RMS:U=${u.U} ${u.isPass?"<=":">"} ${u.table}\n`;
     console.log(`exact test ${e?"pass":"fail"}`)
+    output+=`exact test ${e?"pass":"fail"}\n`
     for (let i of result){
         console.log(i)
+        output+=`${i}\n`;
     }
+    fs.writeFileSync(`./result.txt`,output)
+
 }
 function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "LeaveTime": 0 }], roundTimes) {
     let timetable = [];
