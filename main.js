@@ -51,27 +51,63 @@ function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "Leav
         else if (a.Period < b.Period) return -1;
         return 0;
     });
-    let TaskIndex = 0;
-    let TaskTotal = tasks.length - 1;
-    for (let round = 0; round < roundTimes; round++) {
-        if(round)
-        if (tasks[TaskIndex].LeaveTime == 0) {
-            if (TaskIndex == TaskTotal) {
-                TaskIndex = 0;
-                console.log("continue")
-                continue;
-            }
-            TaskIndex++;
+    /**
+     * To calculate how many times the while-loop runs
+     */
+    let count = 0;
+    let tIndex = 0;
+    let tTatal = tasks.length - 1;
+    for (let round = 0; round < roundTimes + 1; round++) {
+        while (tasks[tIndex].LeaveTime == 0) {
+            tIndex++;
+            /**
+             * when the index large then the number of total tasks.
+             * turn the index into 0 and counter plus 1.
+             */
+            if (tIndex > tTatal) {
+                tIndex = 0
+                count++;
+            };
+            /**
+             * If while-loop runs total-tasks times 
+             * that exit the loop and reset count to 0.
+             */
+            if (count == tTatal) {
+                count = 0;
+                break
+            };
         }
-        tasks[TaskIndex].LeaveTime--;
-        tasks.forEach((v, i) => {
-            if (round % v.Period == 0 && v.LeaveTime == 0 && round != 0) {
-                v.LeaveTime = v.ComputationalTime
-                TaskIndex = i;
-                console.log('hi')
+
+        if (round != 0) {
+            let temp = [];
+            let sw = false;
+            tasks.forEach((v, i) => {
+                if (round % v.Period == 0) {
+                    v.LeaveTime = v.ComputationalTime;
+                    temp.push(i);
+                    sw = true;
+                    //console.log(v.ID,"Enter");
+                }
+            })
+            temp.sort((a, b) => {
+                if (a > b) return 1;
+                else if (a < b) return -1;
+                return 0;
+            });
+            if (sw) {
+                tIndex = temp[0];
+                sw = false;
             }
-        })
-        console.log("Round", round, "\t task:", tasks[TaskIndex])
+        }
+
+        if (tasks[tIndex].LeaveTime !== 0) {
+            tasks[tIndex].LeaveTime--;
+            console.log("Round", round, "\ttask:", tasks[tIndex].ID)
+        }
+        else {
+            console.log("Round", round, "\ttask: break")
+        }
+
     }
 
 }
