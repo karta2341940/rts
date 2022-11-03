@@ -40,8 +40,12 @@ function main() {
     let roundTimes = arrayLCM(lcmArray);
     let e = exactTest(tasks);
     let u = utilizationTest(tasks);
-    schedule(tasks, roundTimes);
-
+    let result = schedule(tasks, roundTimes);
+    console.log(`RMS:U=${u.U} ${u.isPass?"<=":">"} ${u.table}`)
+    console.log(`exact test ${e?"pass":"fail"}`)
+    for (let i of result){
+        console.log(i)
+    }
 }
 function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "LeaveTime": 0 }], roundTimes) {
     let timetable = [];
@@ -81,14 +85,20 @@ function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "Leav
         if (round != 0) {
             let temp = [];
             let sw = false;
+            let isDeadLine = false;
             tasks.forEach((v, i) => {
                 if (round % v.Period == 0) {
+                    if(v.LeaveTime != 0){
+                        //console.log("miss deadline : ", v.ID);
+                        isDeadLine = true;
+                        timetable.push(`${round}:X:${v.ID}`);
+                    }
                     v.LeaveTime = v.ComputationalTime;
                     temp.push(i);
                     sw = true;
-                    //console.log(v.ID,"Enter");
                 }
             })
+            if(isDeadLine) return timetable;
             temp.sort((a, b) => {
                 if (a > b) return 1;
                 else if (a < b) return -1;
@@ -102,14 +112,16 @@ function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "Leav
 
         if (tasks[tIndex].LeaveTime !== 0) {
             tasks[tIndex].LeaveTime--;
-            console.log("Round", round, "\ttask:", tasks[tIndex].ID)
+            //console.log("Round", round, "\ttask:", tasks[tIndex])
+            timetable.push(`${round}:E:${tasks[tIndex].ID}`);
         }
         else {
-            console.log("Round", round, "\ttask: break")
+            //console.log("Round", round, "\ttask: break")
+            timetable.push(`${round}:I`);
         }
 
     }
-
+    return true;
 }
 function exactTest(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, }]) {
     let n = tasks.length;
