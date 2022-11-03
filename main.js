@@ -98,6 +98,7 @@ function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "Leav
                     sw = true;
                 }
             })
+            // If miss deadline exit the subfunction and output the result.
             if(isDeadLine) return timetable;
             temp.sort((a, b) => {
                 if (a > b) return 1;
@@ -121,7 +122,7 @@ function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "Leav
         }
 
     }
-    return true;
+    return timetable;
 }
 function exactTest(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, }]) {
     let n = tasks.length;
