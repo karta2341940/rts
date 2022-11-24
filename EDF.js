@@ -42,9 +42,13 @@ function main() {
     let roundTimes = arrayLCM(lcmArray); // To get the LCM of this task set period
     let u = utilizationTest(tasks);
     let result = schedule(tasks, roundTimes);
-    console.log(`EDF:U=${u.U <= 1 ? `${u.U}<=1` : `${u.U}>1`}`)
-    console.log(`Schedulability test ${u.isPass ? "pass" : "fail"}`)
-    //fs.writeFileSync(`./EDF.result.txt`, output)
+    let output =""
+    output+=`EDF:U=${u.U <= 1 ? `${u.U}<=1` : `${u.U}>1`}\nSchedulability test ${u.isPass ? "pass" : "fail"}\n`
+    result.forEach(v=>{
+        output+=`${v}\n`
+    })
+    console.log(output)
+    fs.writeFileSync(`./EDF.result.txt`, output)
 
 }/**
  * 
@@ -52,68 +56,44 @@ function main() {
  * @param {*} roundTimes 
  * @returns 
  */
-function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "DeadLine": 0, "Executed": 0, "isDone": false }], roundTimes) {
+function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "DeadLine": 0, "Executed": 0 }], timeLCM) {
+    console.clear()
     let timetable = [];
     // sort by the period from short to long
-    tasks.sort((a, b) => {
-        if (a.DeadLine > b.DeadLine) return 1;
-        else if (a.DeadLine < b.DeadLine) return -1;
-        return 0;
-    });
-    let taskNumber = 0;
+    sort(tasks);
+    let executeQueue = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "DeadLine": 0, "Executed": 0 }];
+    executeQueue = objectCopy(tasks);
     // To run procedure
-    for (let time = 1; time <= roundTimes; time++) {
-        if (tasks[taskNumber].DeadLine < time) {
-            console.log(`${time} - ID : ${tasks[taskNumber].ID} Missing deadline`)
-            return;
-        }
-        let idelNumber = 0;
-        tasks.forEach(v=>{
-            if (v.DeadLine == 999){
-                idelNumber ++;
-            }
-        })
-        if(idelNumber != tasks.length){
-            tasks[taskNumber].Executed++;
-            console.log(`${tasks[taskNumber].ID} - ${tasks[taskNumber].Executed}/${tasks[taskNumber].ComputationalTime}(${time})(${tasks[taskNumber].DeadLine})`)
-        }
-        else{
-            console.log(`idel(${time})`);
-        }
-
-
-        if (tasks[taskNumber].Executed == tasks[taskNumber].ComputationalTime) {
-            tasks[taskNumber].Executed = 0;
-            tasks[taskNumber].DeadLine = 999;
-            if (taskNumber < tasks.length - 1) {
-                taskNumber++;
-            }
-            else {
-                taskNumber = 0;
-            }
-
-        }
-        else if (tasks[taskNumber].Executed < tasks[taskNumber].ComputationalTime) {
-        }
-
-        let str = []
+    for (let time = 0; time < timeLCM; time++) {
         tasks.forEach(v => {
-            if ((time % v.Period == 0) && (time != 0)) {
+            if (time % v.Period == 0 && time != 0) {
                 v.DeadLine = time + v.Period;
-                v.Executed = 0;
-                str.push(v.ID);
+                executeQueue.push(objectCopy(v)) // If task arrive that push into the queue
             }
+            sort(executeQueue);
 
         })
-        // if there are tasks arriving, resort the task set
-        if (str.length > 0) {
-            console.log(str)
-            tasks.sort((a, b) => {
-                if (a.DeadLine > b.DeadLine) return 1;
-                if (a.DeadLine < b.DeadLine) return -1;
-                else return 0;
-            });
-            taskNumber = 0;
+        if (executeQueue.length == 0) { // detect whether the cpu is idle
+            //console.log("idle")
+            timetable.push(`${time}:I`);
+            continue;
+        }
+        executeQueue[0].Executed++;    
+        timetable.push(`${time}:E:${executeQueue[0].ID}`);
+        //console.log(executeQueue[0], `\t${String(time).padStart(3, " ")}`);
+        
+        if(isDeadLine(timeLCM,time,executeQueue)){
+            //console.log("missing deadline");
+            timetable.push(`${time+1}:X:${executeQueue[0].ID}`);
+            break;
+        }
+        if (executeQueue[0].Executed == executeQueue[0].ComputationalTime) {
+            executeQueue.shift();
+        }
+        if(time == timeLCM-1 && executeQueue.length != 0){
+            //console.log("missing deadline");
+            timetable.push(`${time+1}:X:${executeQueue[0].ID}`);
+            break;
         }
     }
 
@@ -121,7 +101,18 @@ function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "Dead
 
     return timetable;
 }
-
+function isDeadLine(timeLCM,time,executeQueue=[{ "ID": 0, "Period": 0, "ComputationalTime": 0, "DeadLine": 0, "Executed": 0 }]){
+    if ((time == executeQueue[0].DeadLine - 1 && executeQueue[0].Executed < executeQueue[0].ComputationalTime) || (time == timeLCM - 1 && executeQueue[0].Executed < executeQueue[0].ComputationalTime)) {
+        return true;
+    }
+    return false
+}
+function sort(tasks) {
+    tasks.sort((a, b) => {
+        if (a.DeadLine > b.DeadLine) return 1;
+        else return -1;
+    });
+}
 /**
  *
  * @param {Array} tasks 

@@ -1,0 +1,8 @@
+EDF:U=1.8>1
+Schedulability test fail
+0:E:1
+1:E:2
+2:E:2
+3:E:1
+4:E:3
+5:X:3
