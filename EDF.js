@@ -62,7 +62,8 @@ function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "Dead
     });
     let taskNumber = 0;
     for (let time = 0; time <= roundTimes; time++) {
-        tasks[taskNumber].Executed
+        tasks[taskNumber].Executed++;
+        
         if (tasks[taskNumber].DeadLine == time) {
             console.log("Miss Deadline")
         }
