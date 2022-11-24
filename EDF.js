@@ -25,7 +25,7 @@ function main() {
             "Period": 0,
             "ComputationalTime": 0,
             "DeadLine": 0,
-            "Executed":0
+            "Executed": 0
         }
         if (value === '0') {
             return;
@@ -52,7 +52,7 @@ function main() {
  * @param {*} roundTimes 
  * @returns 
  */
-function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "DeadLine": 0, "Executed":0 }], roundTimes) {
+function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "DeadLine": 0, "Executed": 0 }], roundTimes) {
     let timetable = [];
     // sort by the period from short to long
     tasks.sort((a, b) => {
@@ -62,12 +62,20 @@ function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "Dead
     });
     let taskNumber = 0;
     for (let time = 0; time <= roundTimes; time++) {
-        tasks[taskNumber].Executed++;
-        
-        if (tasks[taskNumber].DeadLine == time) {
-            console.log("Miss Deadline")
-        }
+        while (tasks[taskNumber].Executed != tasks[taskNumber].ComputationalTime) {
+            console.log(taskNumber,"-",tasks[taskNumber].Executed)
+            if (tasks[taskNumber].DeadLine == time) {
+                console.log("Miss Deadline");
+                return;
+            }
+            tasks[taskNumber].Executed++;
 
+        }
+        console.log("Finish")
+        taskNumber++;
+        if(taskNumber == tasks.length){
+            taskNumber = 0;
+        }
     }
 
 
