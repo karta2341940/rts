@@ -52,7 +52,7 @@ function main() {
  * @param {*} roundTimes 
  * @returns 
  */
-function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "DeadLine": 0, "Executed": 0 }], roundTimes) {
+function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "DeadLine": 0, "Executed": 0, "isDone": false }], roundTimes) {
     let timetable = [];
     // sort by the period from short to long
     tasks.sort((a, b) => {
@@ -61,19 +61,58 @@ function schedule(tasks = [{ "ID": 0, "Period": 0, "ComputationalTime": 0, "Dead
         return 0;
     });
     let taskNumber = 0;
-    for (let time = 0; time <= roundTimes; time++) {
-        while (tasks[taskNumber].Executed != tasks[taskNumber].ComputationalTime) {
-            console.log(taskNumber,"-",tasks[taskNumber].Executed)
-            if (tasks[taskNumber].DeadLine == time) {
-                console.log("Miss Deadline");
-                return;
+    // To run procedure
+    for (let time = 1; time <= roundTimes; time++) {
+        if (tasks[taskNumber].DeadLine < time) {
+            console.log(`${time} - ID : ${tasks[taskNumber].ID} Missing deadline`)
+            return;
+        }
+        let idelNumber = 0;
+        tasks.forEach(v=>{
+            if (v.DeadLine == 999){
+                idelNumber ++;
             }
+        })
+        if(idelNumber != tasks.length){
             tasks[taskNumber].Executed++;
+            console.log(`${tasks[taskNumber].ID} - ${tasks[taskNumber].Executed}/${tasks[taskNumber].ComputationalTime}(${time})(${tasks[taskNumber].DeadLine})`)
+        }
+        else{
+            console.log(`idel(${time})`);
+        }
+
+
+        if (tasks[taskNumber].Executed == tasks[taskNumber].ComputationalTime) {
+            tasks[taskNumber].Executed = 0;
+            tasks[taskNumber].DeadLine = 999;
+            if (taskNumber < tasks.length - 1) {
+                taskNumber++;
+            }
+            else {
+                taskNumber = 0;
+            }
 
         }
-        console.log("Finish")
-        taskNumber++;
-        if(taskNumber == tasks.length){
+        else if (tasks[taskNumber].Executed < tasks[taskNumber].ComputationalTime) {
+        }
+
+        let str = []
+        tasks.forEach(v => {
+            if ((time % v.Period == 0) && (time != 0)) {
+                v.DeadLine = time + v.Period;
+                v.Executed = 0;
+                str.push(v.ID);
+            }
+
+        })
+        // if there are tasks arriving, resort the task set
+        if (str.length > 0) {
+            console.log(str)
+            tasks.sort((a, b) => {
+                if (a.DeadLine > b.DeadLine) return 1;
+                if (a.DeadLine < b.DeadLine) return -1;
+                else return 0;
+            });
             taskNumber = 0;
         }
     }
